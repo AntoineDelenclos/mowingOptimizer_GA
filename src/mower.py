@@ -6,7 +6,9 @@ class Mower:
         self.position = [0,0]
         self.mowedCases = 0
         self.view = "DOWN"
-        self.terrain = [[0 for i in range(self.TERRAIN_SIZE[0])] for j in range(self.TERRAIN_SIZE[1])]
+        self.visitedCases = set()
+        self.terrain = [[0 for _ in range(self.TERRAIN_SIZE[0])] for _ in range(self.TERRAIN_SIZE[1])]
+        self.visitedCases.add(tuple(self.position))
 
     def setView(self, new_view):
         if new_view not in self.ALLOWED_VIEWS:
@@ -28,18 +30,36 @@ class Mower:
         return self.position
 
     def isMowed(self, position):
-        return self.terrain[position[0]][position[1]]
+        return self.terrain[position[1]][position[0]]
 
     def moveForward(self):
-        match self.view:
-            case "DOWN":
+        if self.view == "DOWN":
+            if self.position[1] + 1 < self.TERRAIN_SIZE[1]:
                 self.position[1] += 1
-            case "RIGHT":
+        elif self.view == "RIGHT":
+            if self.position[0] + 1 < self.TERRAIN_SIZE[0]:
                 self.position[0] += 1
-            case "UP":
+        elif self.view == "UP":
+            if self.position[1] - 1 >= 0:
                 self.position[1] -= 1
-            case "LEFT":
+        elif self.view == "LEFT":
+            if self.position[0] - 1 >= 0:
                 self.position[0] -= 1
 
+        self.visitedCases.add(tuple(self.position))
+
     def mow(self):
-        self.terrain[self.position[0]][self.position[1]] = 1
+        current_position = tuple(self.position)
+        if self.terrain[self.position[1]][self.position[0]] == 0:
+            self.terrain[self.position[1]][self.position[0]] = 1
+            self.mowedCases += 1
+        self.visitedCases.add(current_position)
+
+    def getMowedCount(self):
+        return self.mowedCases
+
+    def getVisitedCount(self):
+        return len(self.visitedCases)
+
+    def isComplete(self):
+        return self.mowedCases == self.TERRAIN_SIZE[0] * self.TERRAIN_SIZE[1]
